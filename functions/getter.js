@@ -1,6 +1,17 @@
+import { data } from "../tasa-conversion.json";
 require("dotenv").config();
 
-exports.handler = function (event, context, callback) {
+/* Simulación de llamada a la base de datos */
+const tasaConversion = (moneda, anio, password) => {
+  if (password == "qwerty01234") {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => resolve(data[moneda][anio]), 400);
+    });
+  }
+  return JSON.stringify({ error: "No tienes permiso" });
+};
+
+exports.handler = async function (event, context, callback) {
   // Tres parámetros que tiene la función: event, context, callback
   /*
     event:
@@ -13,33 +24,39 @@ exports.handler = function (event, context, callback) {
         Es la función que responde al que llamó a la API
     */
 
-  //   const DB_URL = "http://mi-base-de-datos.com/api";
+  /* Constantes a usar */
   const { MI_APPI_KEY } = process.env;
   const solicitudAMongo = "qwerty01234";
-  //   console.log("Variable de entorno: ", MI_APPI_KEY);
-  console.log("EVENT");
-  console.log(event);
+  const ev = event.queryStringParameters;
+  let isLegalCall = false;
 
-  let cantidad = event.queryStringParameters.dolar * 20.69;
-
-  let monedasDelMundo = {
-    euros: {
-      2020: 23.51,
-      2021: 25.63,
-    },
-    dolares: {
-      2020: 19.51,
-      2021: 20.63,
-    },
+  /* Lógica de consulta a la base de datos */
+  const responder = async () => {
+    let tasa = await tasaConversion(ev.moneda, ev.anio, "qwerty01234");
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ pesos: tasa * ev.cantidad }),
+    };
   };
 
-  // minimo requerido: enviar un 401 Unauthorize y un 200 OK status code
-  // si quieres verte pro: 400 Bad request, 403 Forbidden
+  /* Validación */
+  let error = "";
+  try {
+    if (typeof JSON.parse(ev.anio) == "number") {
+      isLegalCall = true;
+    }
+  } catch {
+    error = "Año no es un número";
+    console.log(error);
+  }
 
-  let body = { pesos: cantidad };
+  const sendErrorMsg = () => {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ msg: "Datos incorrectos" }),
+    };
+  };
 
-  callback(null, {
-    statusCode: 200,
-    body: JSON.stringify(body),
-  });
+  /* Respuesta al front end --> sustiyendo al callback */
+  return isLegalCall ? await responder() : sendErrorMsg();
 };
