@@ -1,0 +1,15 @@
+{
+  "name": "lambdas-test-class",
+  "version": "1.0.0",
+  "description": "Clase de como usar lambdas",
+  "main": "index.js",
+  "scripts": {
+    "lambda-serve": "netlify-lambda serve functions"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "netlify-lambda": "^2.0.13"
+  }
+}
