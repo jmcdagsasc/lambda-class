@@ -28,6 +28,7 @@ exports.handler = async function (event, context, callback) {
   const { MI_APPI_KEY } = process.env;
   const solicitudAMongo = "qwerty01234";
   const ev = event.queryStringParameters;
+
   let isLegalCall = false;
 
   /* Lógica de consulta a la base de datos */
